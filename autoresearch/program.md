@@ -38,6 +38,45 @@ Each experiment runs on a single GPU. The training script runs for a **fixed tim
 
 **The first run**: Your very first run should always be to establish the baseline, so you will run the training script as is.
 
+## Known Results from Prior Runs
+
+The current `train.py` represents the best result from 23 prior experiments (val_bpb=1.074922, ~19.5 GB VRAM). Below is a summary of what worked and what didn't. Use this to avoid repeating failed experiments and to focus on unexplored territory.
+
+### What worked (kept changes, in order of impact)
+1. **TOTAL_BATCH_SIZE=2^17** (was 2^19): Biggest single win. 1.142→1.079. Fewer grad accum steps = more optimizer updates in 5 min.
+2. **3x MLP expansion** (was 4x default): Slight param reduction, better compute allocation. 1.077→1.076.
+3. **WEIGHT_DECAY=0.1** (was 0): Helps generalization. 1.079→1.078.
+4. **EMBEDDING_LR=2.0** (was default): Higher embedding LR helps. 1.078→1.077.
+5. **Value embeddings on ALL layers** (was only some): More expressive. 1.077→1.076.
+6. **Muon ns_steps=6** (was 5): More Newton-Schulz iterations. 1.076→1.075.
+
+### What failed (discarded or crashed)
+- **GeLU activation**: Worse than ReLU² (1.093 vs 1.077)
+- **SwiGLU**: OOM crash
+- **DEPTH=10**: OOM crash
+- **DEPTH=6**: Worse (1.084), not enough capacity
+- **EMBEDDING_LR=4.0**: Too high, hurt performance (1.080)
+- **WEIGHT_DECAY=0.05**: Slightly worse than 0.1
+- **MATRIX_LR=0.06**: Worse
+- **MATRIX_LR=0.03**: Worse (current 0.04 is sweet spot for this size)
+- **No value embeddings**: Much worse (1.084)
+- **DEVICE_BATCH=32 with TOTAL=2^16**: Too noisy
+- **ASPECT_RATIO=80** (wider, shallower): Worse (1.089)
+- **ADAM_BETAS=(0.9,0.95)**: Slightly worse than (0.8,0.95)
+- **WARMDOWN_RATIO=0.3**: Worse than 0.6
+
+### Promising directions to explore (not yet tried)
+- Learning rate warmup (currently WARMUP_RATIO=0.0 — some warmup might help stability)
+- Different softcap values (currently 15)
+- Head dimension tuning (currently 128)
+- Sequence length packing/curriculum strategies
+- Weight tying (share wte and lm_head weights)
+- Different window patterns (currently "L" = full attention everywhere)
+- Gradient clipping
+- Different Muon momentum schedules
+- Label smoothing
+- Model depth 9 (between working 8 and OOM 10) with slightly reduced width
+
 ## Output format
 
 Once the script finishes it prints a summary like this:
@@ -108,6 +147,12 @@ The idea is that you are a completely autonomous researcher trying things out. I
 **Timeout**: Each experiment should take ~5 minutes total (+ a few seconds for startup and eval overhead). If a run exceeds 10 minutes, kill it and treat it as a failure (discard and revert).
 
 **Crashes**: If a run crashes (OOM, or a bug, or etc.), use your judgment: If it's something dumb and easy to fix (e.g. a typo, a missing import), fix it and re-run. If the idea itself is fundamentally broken, just skip it, log "crash" as the status in the tsv, and move on.
+
+**Strategy**: Since the baseline is already well-tuned, focus on:
+1. **Small hyperparameter sweeps** around known-good values (e.g. try WEIGHT_DECAY in [0.08, 0.12, 0.15])
+2. **Architectural changes** that don't increase VRAM much (window patterns, head dim, softcap)
+3. **Training dynamics** (warmup, gradient clipping, label smoothing, LR schedule shape)
+4. **One change at a time** — don't combine multiple untested ideas in a single run
 
 **NEVER STOP**: Once the experiment loop has begun (after the initial setup), do NOT pause to ask the human if you should continue. Do NOT ask "should I keep going?" or "is this a good stopping point?". The human might be asleep, or gone from a computer and expects you to continue working *indefinitely* until you are manually stopped. You are autonomous. If you run out of ideas, think harder — read papers referenced in the code, re-read the in-scope files for new angles, try combining previous near-misses, try more radical architectural changes. The loop runs until the human interrupts you, period.
 

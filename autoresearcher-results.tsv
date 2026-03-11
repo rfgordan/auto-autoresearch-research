@@ -1,0 +1,2 @@
+name	starting_val_bpb	ending_val_bpb	status	agent_changes	best_discoveries
+mar11-hints	1.074812	1.072700	keep	Added known-good hyperparameter ranges and failed approaches from 23 prior experiments to program.md; added strategy guidance for one-change-at-a-time methodology	softcap 10; warmdown 0.55; final_lr_frac 0.05; muon momentum start 0.75 warmup 200 beta2 0.97; EMA 0.99; resid_lambdas lr 0.02
