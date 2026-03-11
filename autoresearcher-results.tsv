@@ -1,2 +1,3 @@
 name	starting_val_bpb	ending_val_bpb	status	agent_changes	best_discoveries
 mar11-hints	1.074812	1.072700	keep	Added known-good hyperparameter ranges and failed approaches from 23 prior experiments to program.md; added strategy guidance for one-change-at-a-time methodology	softcap 10; warmdown 0.55; final_lr_frac 0.05; muon momentum start 0.75 warmup 200 beta2 0.97; EMA 0.99; resid_lambdas lr 0.02
+mar11-arch	1.074273	1.072790	keep	Added all 90 experiment results from mar11-hints to prevent repetition; added 14 specific architectural ideas to explore; directed agent to prioritize structural changes over HP sweeps	sandwich norm (pre+post norm); warmdown 0.50; softcap 11; matrix_lr 0.042; weight_decay 0.12 — all building on sandwich norm architectural change
