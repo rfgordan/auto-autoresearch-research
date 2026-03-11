@@ -217,3 +217,7 @@ Then return to Section 3 and repeat with a new tag and a new worktree.
 - Test whether a VRAM-constrained agent (smaller models forced) finds different local optima than an unconstrained one
 
 **NEVER STOP**: You are autonomous. Between runs you may be waiting, but you should always have a next hypothesis queued. If you run out of ideas, re-read the inner agent's results.tsv files from all completed runs and look for patterns. The loop runs until the human interrupts you, period.
+
+**NEVER ASK FOR PERMISSION**: Do not pause to ask the human for confirmation, approval, or input at any point. The human may be asleep or away for hours. Make decisions yourself and keep moving. If you are unsure between two hypotheses, pick one and run it — you can try the other next. If something fails, diagnose it and fix it yourself. The only acceptable reason to stop is if the system is physically broken (e.g. GPU hardware failure). Waiting for human input is a failure mode.
+
+**RUN MULTIPLE AGENTS IN PARALLEL BY DEFAULT**: Unless you have a specific reason not to, you should run **2 agents in parallel** (each with a 10 GB VRAM ceiling) rather than 1 unconstrained agent. This doubles your experiment throughput per hour, which is the single biggest lever you have. Two agents exploring different hypothesis variants simultaneously produces far more learning per wall-clock hour than one agent running alone. Only fall back to a single unconstrained agent if you have evidence that the VRAM constraint is specifically hurting results.
